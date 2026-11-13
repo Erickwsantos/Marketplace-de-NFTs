@@ -33,6 +33,8 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       auth: (cb) => cb(token ? { token } : {}),
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
+      // Falha de conexão detectada em 5 s (padrão 20 s): o aviso de reconexão aparece rápido.
+      timeout: 5000,
     })
     let connectedBefore = false
 

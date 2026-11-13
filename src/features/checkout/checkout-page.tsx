@@ -144,7 +144,8 @@ function Checkout({ userId }: { userId: string }) {
     const target = { walletId: values.walletId, provider: values.buyer.provider, network: values.buyer.network }
     if (!connectionMatches(connection, target)) {
       setFormMessage('Conecte a carteira selecionada antes de confirmar a compra.')
-      document.getElementById('wallet-connection')?.querySelector('button')?.focus()
+      // Foca a ação "Conectar" (o primeiro botão do painel é um rádio de provedor).
+      document.getElementById('wallet-connection')?.querySelector<HTMLButtonElement>('[data-wallet-connect]')?.focus()
       return
     }
     setNotice(null)

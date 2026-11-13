@@ -27,7 +27,10 @@ export function useZodForm<S extends z.ZodType<FieldValues, FieldValues>>(
 ) {
   return useForm<z.input<S>, unknown, z.output<S>>({
     resolver: zodResolver(schema as never) as unknown as Resolver<z.input<S>, unknown, z.output<S>>,
-    mode: 'onTouched',
+    // Valida no envio e revalida ao digitar: sem deslocamento de layout no blur
+    // (que fazia o clique em "Salvar" se perder).
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
     ...options,
   })
 }

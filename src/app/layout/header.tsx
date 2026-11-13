@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState, type RefObject } from 'react'
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { HeartIcon, HomeIcon, LogInIcon, SearchIcon, ShoppingCartIcon, UserIcon } from 'lucide-react'
 import { useAuth } from '@/features/auth/session'
@@ -55,12 +55,27 @@ function useCartLabel() {
   return count > 0 ? `Carrinho, ${count} ${count === 1 ? 'item' : 'itens'}` : 'Carrinho vazio'
 }
 
-function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+function SearchDialog({
+  open,
+  onOpenChange,
+  triggerRef,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  /** Botão que abriu o diálogo: recebe o foco de volta ao fechar (o Radix só faz isso com DialogTrigger). */
+  triggerRef: RefObject<HTMLButtonElement | null>
+}) {
   const navigate = useNavigate()
   const [value, setValue] = useState('')
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault()
+          triggerRef.current?.focus()
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Buscar NFTs</DialogTitle>
           <DialogDescription>Pesquise por nome, coleção, criador ou ID do token.</DialogDescription>
@@ -89,6 +104,7 @@ export function Header() {
   const section = useActiveSection()
   const { user, isResolving } = useAuth()
   const [searchOpen, setSearchOpen] = useState(false)
+  const searchButtonRef = useRef<HTMLButtonElement>(null)
   const cartLabel = useCartLabel()
 
   const navLink = (active: boolean) =>
@@ -122,7 +138,7 @@ export function Header() {
           </ul>
         </nav>
         <div className="flex items-center gap-2 md:gap-3">
-          <Button variant="ghost" size="icon-sm" onClick={() => setSearchOpen(true)} aria-label="Buscar NFTs">
+          <Button ref={searchButtonRef} variant="ghost" size="icon-sm" onClick={() => setSearchOpen(true)} aria-label="Buscar NFTs">
             <SearchIcon aria-hidden />
           </Button>
           <Button variant="ghost" size="icon-sm" asChild className="relative hidden md:inline-flex">
@@ -148,7 +164,7 @@ export function Header() {
           )}
         </div>
       </div>
-      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} triggerRef={searchButtonRef} />
     </header>
   )
 }

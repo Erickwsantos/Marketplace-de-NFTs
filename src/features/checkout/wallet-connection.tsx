@@ -120,6 +120,7 @@ export function WalletConnectionPanel({
             <Button
               variant="outline"
               size="sm"
+              data-wallet-connect
               disabled={!walletId}
               loading={connect.isPending}
               onClick={() => connect.mutate(target)}

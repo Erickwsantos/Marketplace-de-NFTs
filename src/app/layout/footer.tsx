@@ -94,7 +94,7 @@ export function Footer() {
           <p>+55 11 4002 8922</p>
         </div>
         <div className="grid gap-8 rounded-b-md bg-surface px-6 py-8 text-xs sm:grid-cols-2 lg:grid-cols-4">
-          <nav aria-label="Meu perfil">
+          <nav aria-label="Rodapé: meu perfil">
             <h2 className="mb-3 text-sm font-bold">Meu perfil</h2>
             <ul className="flex flex-col gap-2">
               <li><Link to="/profile" className="hover:text-primary">Meu perfil</Link></li>
@@ -112,7 +112,7 @@ export function Footer() {
               ))}
             </ul>
           </div>
-          <nav aria-label="Coleções">
+          <nav aria-label="Rodapé: coleções">
             <h2 className="mb-3 text-sm font-bold">Coleções</h2>
             <ul className="flex flex-col gap-2">
               {FOOTER_CATEGORIES.map((category) => (
