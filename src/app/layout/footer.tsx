@@ -15,7 +15,7 @@ const FEATURES = [
 /** Fora do escopo (páginas editoriais/suporte): texto sem link, sem aparentar funcionar. */
 function Soon({ children }: { children: string }) {
   return (
-    <span className="text-muted-foreground/70" title="Em breve">
+    <span className="text-muted-foreground" title="Em breve">
       {children}
       <span className="sr-only"> (em breve)</span>
     </span>

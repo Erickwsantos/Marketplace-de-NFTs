@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { io } from 'socket.io-client'
+import type { Socket } from 'socket.io-client'
 import { toast } from 'sonner'
 import { nftUpdatedEventSchema, orderUpdatedEventSchema, REALTIME_EVENTS } from '@/contracts'
 import { useAuth } from '@/features/auth/session'
@@ -28,47 +28,59 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     // Com token, aguarda a sessão ser validada para saber o userId.
     if (token && !userId) return
     const guard = createEventGuard()
-    const socket = io(env.socketUrl, {
-      transports: ['websocket'],
-      auth: (cb) => cb(token ? { token } : {}),
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      // Falha de conexão detectada em 5 s (padrão 20 s): o aviso de reconexão aparece rápido.
-      timeout: 5000,
-    })
-    let connectedBefore = false
+    let socket: Socket | null = null
+    let disposed = false
 
-    socket.on('connect', () => {
-      setStatus('connected')
-      if (connectedBefore) {
-        reconcileAfterReconnect(queryClient)
-        announce('Conexão em tempo real restabelecida.')
-      }
-      connectedBefore = true
-    })
-    socket.on('disconnect', () => setStatus('reconnecting'))
-    socket.on('connect_error', () => setStatus('reconnecting'))
-
-    socket.on(REALTIME_EVENTS.nftUpdated, (payload: unknown) => {
-      const parsed = nftUpdatedEventSchema.safeParse(payload)
-      if (!parsed.success || !guard.accept(parsed.data)) return
-      const { affectedCartItems } = applyNftUpdated(queryClient, parsed.data)
-      if (affectedCartItems.length > 0) {
-        const message = `Preço ou disponibilidade atualizados no carrinho: ${affectedCartItems.join(', ')}.`
-        toast.info(message, { id: `cart-change-${parsed.data.resource.id}` })
-        announce(message)
-      }
+    // socket.io-client é carregado sob demanda: fora do bundle inicial (LCP/TBT).
+    void import('socket.io-client').then(({ io }) => {
+      if (disposed) return
+      socket = io(env.socketUrl, {
+        transports: ['websocket'],
+        auth: (cb) => cb(token ? { token } : {}),
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        // Falha de conexão detectada em 5 s (padrão 20 s): o aviso de reconexão aparece rápido.
+        timeout: 5000,
+      })
+      attach(socket)
     })
 
-    socket.on(REALTIME_EVENTS.orderUpdated, (payload: unknown) => {
-      const parsed = orderUpdatedEventSchema.safeParse(payload)
-      if (!userId || !parsed.success || !guard.accept(parsed.data)) return
-      applyOrderUpdated(queryClient, userId, parsed.data)
-    })
+    const attach = (socket: Socket) => {
+      let connectedBefore = false
+
+      socket.on('connect', () => {
+        setStatus('connected')
+        if (connectedBefore) {
+          reconcileAfterReconnect(queryClient)
+          announce('Conexão em tempo real restabelecida.')
+        }
+        connectedBefore = true
+      })
+      socket.on('disconnect', () => setStatus('reconnecting'))
+      socket.on('connect_error', () => setStatus('reconnecting'))
+
+      socket.on(REALTIME_EVENTS.nftUpdated, (payload: unknown) => {
+        const parsed = nftUpdatedEventSchema.safeParse(payload)
+        if (!parsed.success || !guard.accept(parsed.data)) return
+        const { affectedCartItems } = applyNftUpdated(queryClient, parsed.data)
+        if (affectedCartItems.length > 0) {
+          const message = `Preço ou disponibilidade atualizados no carrinho: ${affectedCartItems.join(', ')}.`
+          toast.info(message, { id: `cart-change-${parsed.data.resource.id}` })
+          announce(message)
+        }
+      })
+
+      socket.on(REALTIME_EVENTS.orderUpdated, (payload: unknown) => {
+        const parsed = orderUpdatedEventSchema.safeParse(payload)
+        if (!userId || !parsed.success || !guard.accept(parsed.data)) return
+        applyOrderUpdated(queryClient, userId, parsed.data)
+      })
+    }
 
     return () => {
-      socket.removeAllListeners()
-      socket.disconnect()
+      disposed = true
+      socket?.removeAllListeners()
+      socket?.disconnect()
       setStatus('connecting')
     }
   }, [token, userId, queryClient])

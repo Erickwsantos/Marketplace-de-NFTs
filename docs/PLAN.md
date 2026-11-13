@@ -8,11 +8,11 @@ Plano aprovado em 2026-11-13. Cada wave entrega código verificável (typecheck,
 | 1 | Scaffold (Vite 8, React 19, TS strict, ESLint, Prettier), Tailwind v4 + shadcn/ui, contratos Zod, `vercel.json` | ✅ |
 | 2 | MSW: mock DB persistente, handlers REST, motor de cotação, pedidos idempotentes, cenários, condições de rede, Socket.IO mock, API de controle | ✅ |
 | 3 | Axios + erros normalizados, TanStack Query (política de cache), TanStack Router (guards, search params), sessão, realtime, layout e primitivos | ✅ |
-| 4 | Features: início/catálogo, detalhe + favoritos, auth, carrinho, perfil/carteiras/PWA | 🚧 |
-| 5 | Checkout, pedidos idempotentes, recibo, tempo real ponta a ponta | ⏳ |
-| 6 | Qualidade transversal: responsividade, a11y, PWA, performance | ⏳ |
-| 7 | Playwright: E2E, regressão visual, relatórios | ⏳ |
-| 8 | Lighthouse, README, ARCHITECTURE, CHECKLIST, verificação de checkout limpo | ⏳ |
+| 4 | Features: início/catálogo, detalhe + favoritos, auth, carrinho, perfil/carteiras/PWA | ✅ |
+| 5 | Checkout, pedidos idempotentes, recibo, tempo real ponta a ponta | ✅ |
+| 6 | Qualidade transversal: responsividade, a11y, PWA, performance | ✅ |
+| 7 | Playwright: E2E, regressão visual, relatórios | ✅ |
+| 8 | Lighthouse, README, ARCHITECTURE, CHECKLIST, verificação de checkout limpo | ✅ |
 
 ## Princípios
 

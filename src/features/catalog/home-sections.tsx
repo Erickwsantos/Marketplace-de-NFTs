@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowRightIcon } from 'lucide-react'
 import type { FeaturedResponse } from '@/contracts'
-import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/ui/button'
+import { CarouselDots } from '@/shared/ui/carousel-dots'
 import { EthAmount, NftImage, Skeleton } from '@/shared/ui/primitives'
 
 /** Hero com carrossel de destaques (pontos navegáveis por teclado). */
@@ -38,20 +38,15 @@ export function Hero({ featured }: { featured: FeaturedResponse | undefined }) {
           ) : (
             <Skeleton className="aspect-square w-full rounded-xl" />
           )}
-          {items.length > 1 && (
-            <div className="mt-3 flex justify-center gap-2" role="group" aria-label="Escolher destaque">
-              {items.map((item, i) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setIndex(i)}
-                  aria-label={`Destaque ${i + 1} de ${items.length}: ${item.name}`}
-                  aria-current={i === index}
-                  className={cn('size-2.5 rounded-full transition-colors', i === index ? 'bg-primary' : 'bg-primary/30')}
-                />
-              ))}
-            </div>
-          )}
+          <div className="mt-2">
+            <CarouselDots
+              count={items.length}
+              current={index}
+              onSelect={setIndex}
+              label="Escolher destaque"
+              itemLabel={(i) => `Destaque ${i + 1} de ${items.length}: ${items[i]?.name ?? ''}`}
+            />
+          </div>
         </div>
       </div>
     </section>
@@ -153,7 +148,7 @@ export function Journal() {
               </p>
               <h3 className="text-sm font-bold">{post.title}</h3>
               <p className="text-xs text-muted-foreground">{post.text}</p>
-              <span className="text-xs text-primary/70" title="Em breve">
+              <span className="text-xs text-muted-foreground" title="Em breve">
                 Ler mais (em breve)
               </span>
             </div>

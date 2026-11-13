@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { CatalogQuery } from '@/contracts'
 import { cn } from '@/shared/lib/cn'
+import { CarouselDots } from '@/shared/ui/carousel-dots'
 import { SectionTitle } from '@/shared/ui/primitives'
 import { catalogQueries } from './api'
 import { NftCard, NftCardSkeleton } from './nft-card'
@@ -52,20 +53,13 @@ export function NftCarousel({ title, query, className }: { title: string; query:
           </li>
         ))}
       </ul>
-      {pages > 1 && (
-        <div className="flex justify-center gap-2" role="group" aria-label={`Navegar em ${title}`}>
-          {Array.from({ length: pages }, (_, i) => (
-            <button
-              key={i}
-              type="button"
-              aria-label={`Página ${i + 1} de ${pages}`}
-              aria-current={i === page}
-              onClick={() => scroller.current?.scrollTo({ left: i * scroller.current.clientWidth, behavior: 'smooth' })}
-              className={cn('size-2.5 rounded-full transition-colors', i === page ? 'bg-primary' : 'bg-primary/30')}
-            />
-          ))}
-        </div>
-      )}
+      <CarouselDots
+        count={pages}
+        current={page}
+        onSelect={(i) => scroller.current?.scrollTo({ left: i * scroller.current.clientWidth, behavior: 'smooth' })}
+        label={`Navegar em ${title}`}
+        itemLabel={(i) => `Página ${i + 1} de ${pages}`}
+      />
     </section>
   )
 }
