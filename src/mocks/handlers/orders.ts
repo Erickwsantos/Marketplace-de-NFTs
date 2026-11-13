@@ -2,7 +2,7 @@ import { HttpResponse } from 'msw'
 import { API_HEADERS, createOrderInputSchema, orderStatusSchema, type OrderList } from '@/contracts'
 import { getActiveScenario, getDb, getRuntime, updateRuntime } from '../db/store'
 import { toOrder } from '../domain/mappers'
-import { createOrder, findUserOrder } from '../domain/orders'
+import { createOrder, findTransaction, findUserOrder } from '../domain/orders'
 import { route } from '../http'
 import { BEYOND_CLIENT_TIMEOUT_MS, wait } from '../network'
 import { MockHttpError, parseJson, validate } from '../responses'
@@ -44,4 +44,7 @@ export const orderHandlers = [
   route('GET', '/orders/:orderId', 'required', ({ user, params }) =>
     toOrder(findUserOrder(user, String(params.orderId))),
   ),
+
+  // Explorador simulado: público como um explorador real (sem dados pessoais).
+  route('GET', '/transactions/:hash', 'none', ({ params }) => findTransaction(String(params.hash))),
 ]

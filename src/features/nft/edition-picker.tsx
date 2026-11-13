@@ -22,7 +22,7 @@ export function EditionPicker({
 }) {
   const labelId = useId()
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 max-md:flex-row max-md:flex-wrap max-md:items-center max-md:gap-x-3">
       <span id={labelId} className="text-sm font-semibold">
         Edição:
       </span>
@@ -44,6 +44,9 @@ export function EditionPicker({
                 'inline-flex h-11 min-w-16 cursor-pointer flex-col items-center justify-center rounded-md border border-border bg-surface px-3 text-sm leading-tight font-semibold uppercase transition-colors',
                 'hover:border-primary data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground',
                 'data-[disabled]:cursor-not-allowed data-[disabled]:border-dashed data-[disabled]:opacity-60 data-[disabled]:hover:border-border',
+                // Mobile (Figma): chips em pílula; a selecionada só com contorno laranja.
+                'max-md:h-10 max-md:min-w-14 max-md:rounded-full max-md:px-3.5 max-md:text-xs',
+                'max-md:data-[state=checked]:border-2 max-md:data-[state=checked]:bg-transparent max-md:data-[state=checked]:text-primary',
               )}
             >
               <span>{edition.label}</span>

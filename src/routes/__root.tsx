@@ -2,9 +2,11 @@ import { createRootRouteWithContext, HeadContent, Outlet } from '@tanstack/react
 import type { RouterContext } from '@/app/router'
 import { Footer } from '@/app/layout/footer'
 import { Header, MobileNav } from '@/app/layout/header'
+import { useMobileChrome } from '@/app/layout/mobile-chrome'
 import { SessionWatcher } from '@/features/auth/session-watcher'
 import { RealtimeProvider } from '@/features/realtime/realtime-provider'
 import { LiveAnnouncer } from '@/shared/a11y/announcer'
+import { cn } from '@/shared/lib/cn'
 import { Toaster } from '@/shared/ui/sonner'
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -12,6 +14,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootLayout() {
+  const { bottomNav } = useMobileChrome()
   return (
     <RealtimeProvider>
       <HeadContent />
@@ -22,7 +25,7 @@ function RootLayout() {
         Pular para o conteúdo
       </a>
       <Header />
-      <main id="conteudo" tabIndex={-1} className="min-h-[60vh] pb-20 outline-none md:pb-0">
+      <main id="conteudo" tabIndex={-1} className={cn('min-h-[60vh] outline-none md:pb-0', bottomNav ? 'pb-28' : 'pb-0')}>
         <Outlet />
       </main>
       <Footer />

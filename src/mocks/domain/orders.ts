@@ -1,4 +1,4 @@
-import { TERMINAL_ORDER_STATUSES, type CreateOrderInput, type Network } from '@/contracts'
+import { TERMINAL_ORDER_STATUSES, type CreateOrderInput, type Transaction } from '@/contracts'
 import { getActiveScenario, getDb, getRuntime, nextId, nowIso, persist, updateRuntime } from '../db/store'
 import type { OrderRecord, SessionRecord, UserRecord } from '../db/types'
 import { publishOrderUpdated } from '../events'
@@ -10,11 +10,8 @@ import { bumpPrice, findNft, patchEdition } from './catalog'
 import { sameQuoteValues } from '@/shared/lib/quote'
 import { createQuote, toQuote } from './pricing'
 
-const EXPLORERS: Record<Network, string> = {
-  ethereum: 'https://etherscan.io/tx/',
-  polygon: 'https://polygonscan.com/tx/',
-  solana: 'https://solscan.io/tx/',
-}
+/** Contrato do marketplace na simulação (endereço fictício). */
+export const MARKETPLACE_CONTRACT = '0x4b7572696f4d61726b6574706c616365536d0001'
 
 const timers = new Map<string, ReturnType<typeof setTimeout>>()
 
@@ -34,7 +31,8 @@ function resolveOrder(order: OrderRecord) {
 
   if (order.outcome === 'confirmed') {
     const hash = fakeTxHash(order.id)
-    order.transaction = { hash, explorerUrl: `${EXPLORERS[order.network]}${hash}`, confirmedAt: now }
+    // Explorador simulado interno: nenhuma referência aponta para blockchain real.
+    order.transaction = { hash, explorerUrl: `/explorer/tx/${hash}`, confirmedAt: now }
     for (const line of order.lines) {
       const edition = findNft(line.nftId).editions.find((e) => e.id === line.editionId)
       if (edition) patchEdition(line.nftId, line.editionId, { available: edition.available - line.quantity })
@@ -168,4 +166,26 @@ export async function createOrder(
   publishOrderUpdated(order)
   scheduleResolution(order)
   return { order, replayed: false }
+}
+
+/** Visão pública da transação (explorador simulado): sem dados pessoais do comprador. */
+export function findTransaction(hash: string): Transaction {
+  const order = getDb().orders.find((o) => o.status === 'confirmed' && o.transaction?.hash === hash)
+  if (!order?.transaction) throw new MockHttpError('NOT_FOUND', 'Transação não encontrada na simulação.')
+  const confirmedAt = Date.parse(order.transaction.confirmedAt)
+  return {
+    hash,
+    network: order.network,
+    status: 'success',
+    blockNumber: 19_000_000 + (hashString(hash) % 1_000_000),
+    // ~12 s por bloco, como na Ethereum.
+    confirmations: Math.max(1, Math.floor((Date.now() - confirmedAt) / 12_000) + 1),
+    timestamp: order.transaction.confirmedAt,
+    from: order.wallet.address,
+    to: MARKETPLACE_CONTRACT,
+    valueEth: order.totalEth,
+    networkFeeEth: order.networkFeeEth,
+    transfers: order.lines.map(({ name, tokenId, editionLabel, quantity }) => ({ name, tokenId, editionLabel, quantity })),
+    simulated: true,
+  }
 }

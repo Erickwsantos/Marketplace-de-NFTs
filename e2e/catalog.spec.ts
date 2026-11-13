@@ -93,12 +93,15 @@ test.describe('Catálogo', () => {
     await expect(catalogCards(page)).toHaveCount(9)
 
     const sorted = page.waitForRequest((r) => isCatalogRequest(r) && new URL(r.url()).searchParams.get('sort') === 'price-asc')
-    await page.getByRole('combobox', { name: 'Ordenar por:' }).click()
+    // Mobile (Figma): a ordenação fica dentro do drawer de filtros.
+    const scope = isMobile(page) ? await filtersPanel(page) : page
+    await scope.getByRole('combobox', { name: 'Ordenar por:' }).click()
     await page.getByRole('option', { name: 'Menor preço' }).click()
     await sorted
 
     await expect.poll(() => searchParam(page, 'sort')).toBe('price-asc')
-    await expect(page.getByRole('combobox', { name: 'Ordenar por:' })).toHaveText('Menor preço')
+    await expect(scope.getByRole('combobox', { name: 'Ordenar por:' })).toHaveText('Menor preço')
+    await closeFiltersPanel(page)
     await expect
       .poll(async () => {
         const prices = (await catalogPrices(page)).map(Number)

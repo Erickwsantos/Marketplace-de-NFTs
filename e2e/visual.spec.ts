@@ -10,6 +10,8 @@ import {
   summaryValue,
   test,
   waitForStableAssets,
+  expectCollectorName,
+  isMobile,
 } from './fixtures'
 
 /** Toasts (sonner) e cursor não fazem parte da regressão visual. */
@@ -50,7 +52,10 @@ test.describe('Regressão visual', () => {
     await goToCart(page)
     const summary = page.getByRole('complementary', { name: 'Resumo da carteira' })
     await expect(summaryValue(summary, 'Subtotal')).toHaveText('2.88 ETH')
-    await expect(page.getByRole('region', { name: 'Colecionadores também viram' }).getByRole('article').first()).toBeVisible()
+    // No mobile (Figma) o carrinho não exibe o carrossel de recomendações.
+    if (!isMobile(page)) {
+      await expect(page.getByRole('region', { name: 'Colecionadores também viram' }).getByRole('article').first()).toBeVisible()
+    }
     await snap(page, 'carrinho.png')
   })
 
@@ -60,7 +65,7 @@ test.describe('Regressão visual', () => {
     await addToCartFromCatalog(page, 'Sage Nomad #009')
     await goToCart(page)
     await goToCheckout(page)
-    await expect(page.getByRole('textbox', { name: 'Nome de exibição' })).toHaveValue('Ana Ribeiro')
+    await expectCollectorName(page, 'Ana Ribeiro')
     await expect(summaryValue(page.getByRole('complementary', { name: 'Seus NFTs' }), 'Subtotal')).toHaveText('2.88 ETH')
     await expect(page.getByText('Carteira não conectada.')).toBeVisible()
     await snap(page, 'pagamento.png')

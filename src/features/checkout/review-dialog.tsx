@@ -6,7 +6,14 @@ import { QuoteTotals } from '@/features/cart/quote-summary'
 import { NETWORK_LABELS, PROVIDER_LABELS, shortAddress } from '@/shared/lib/labels'
 import { formatEth } from '@/shared/lib/eth'
 import { Button } from '@/shared/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/shared/ui/dialog'
 import type { CheckoutFormValues } from './checkout-draft'
 
 export type ReviewNotice =
@@ -41,25 +48,35 @@ export function ReviewDialog({
   onConfirm: () => void
 }) {
   const blocked = !quote?.valid
-  const onlyPriceIssues = Boolean(quote?.issues.length) && quote!.issues.every((i) => i.code === 'PRICE_CHANGED')
+  const onlyPriceIssues =
+    Boolean(quote?.issues.length) && quote!.issues.every((i) => i.code === 'PRICE_CHANGED')
   return (
     <Dialog open={open} onOpenChange={(next) => !submitting && onOpenChange(next)}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Revise seu pedido</DialogTitle>
-          <DialogDescription>Confira itens, valores e carteira antes de confirmar a compra.</DialogDescription>
+          <DialogDescription>
+            Confira itens, valores e carteira antes de confirmar a compra.
+          </DialogDescription>
         </DialogHeader>
 
         {notice?.kind === 'changed' && (
-          <p role="alert" className="flex gap-2 rounded-md border border-warning/50 bg-warning/10 p-3 text-xs text-warning">
+          <p
+            role="alert"
+            className="border-warning/50 bg-warning/10 text-warning flex gap-2 rounded-md border p-3 text-xs"
+          >
             <AlertTriangleIcon className="size-4 shrink-0" aria-hidden />
             <span>
-              Os valores foram atualizados (total anterior {formatEth(notice.previousTotal)}). Revise e confirme novamente.
+              Os valores foram atualizados (total anterior {formatEth(notice.previousTotal)}).
+              Revise e confirme novamente.
             </span>
           </p>
         )}
         {notice?.kind === 'error' && (
-          <p role="alert" className="flex gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-xs text-destructive">
+          <p
+            role="alert"
+            className="border-destructive/50 bg-destructive/10 text-destructive flex gap-2 rounded-md border p-3 text-xs"
+          >
             <AlertTriangleIcon className="size-4 shrink-0" aria-hidden />
             <span>{notice.message}</span>
           </p>
@@ -69,14 +86,20 @@ export function ReviewDialog({
           <div className="flex flex-col gap-4">
             <QuoteLines lines={quote.lines} caption="Itens do pedido" />
             {quote.issues.length > 0 && (
-              <div className="flex flex-col gap-2 rounded-md bg-warning/10 p-3 text-xs text-warning">
+              <div className="bg-warning/10 text-warning flex flex-col gap-2 rounded-md p-3 text-xs">
                 <ul className="list-disc pl-4">
                   {quote.issues.map((issue) => (
                     <li key={`${issue.code}-${issue.itemId}`}>{issue.message}</li>
                   ))}
                 </ul>
                 {onlyPriceIssues ? (
-                  <Button size="sm" variant="outline" className="self-start" onClick={onAcceptPrices} loading={accepting}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="self-start"
+                    onClick={onAcceptPrices}
+                    loading={accepting}
+                  >
                     Aceitar novos preços
                   </Button>
                 ) : (
@@ -87,7 +110,7 @@ export function ReviewDialog({
               </div>
             )}
             <QuoteTotals quote={quote} />
-            <dl className="grid grid-cols-2 gap-2 rounded-md bg-background p-3 text-xs">
+            <dl className="bg-background grid grid-cols-2 gap-2 rounded-md p-3 text-xs">
               <dt className="text-muted-foreground">Carteira</dt>
               <dd className="text-right">
                 {values.buyer.nickname} · {shortAddress(values.buyer.address)}
@@ -101,7 +124,7 @@ export function ReviewDialog({
             </dl>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Revalidando valores…</p>
+          <p className="text-muted-foreground text-sm">Revalidando valores…</p>
         )}
 
         <DialogFooter className="gap-2">

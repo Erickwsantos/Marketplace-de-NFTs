@@ -64,6 +64,7 @@ export function Field({
   required,
   hint,
   className,
+  hideLabel = false,
   children,
 }: {
   name: string
@@ -71,6 +72,8 @@ export function Field({
   required?: boolean
   hint?: ReactNode
   className?: string
+  /** Rótulo só para leitores de tela (layout com placeholder, ex.: login do Figma). */
+  hideLabel?: boolean | 'mobile'
   children: (props: ControlProps) => ReactNode
 }) {
   const id = `${useId()}-${name}`
@@ -84,7 +87,7 @@ export function Field({
 
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
-      <Label htmlFor={id} className="text-xs font-semibold text-foreground">
+      <Label htmlFor={id} className={cn('text-xs font-semibold text-foreground', hideLabel === 'mobile' ? 'max-md:sr-only' : hideLabel && 'sr-only')}>
         {label}
         {required && (
           <span className="text-primary" aria-hidden>
@@ -113,22 +116,23 @@ type TextFieldProps = {
   required?: boolean
   hint?: ReactNode
   className?: string
+  hideLabel?: boolean | 'mobile'
 } & Omit<React.ComponentProps<'input'>, 'name' | 'id'>
 
-export function TextField({ name, label, required, hint, className, ...input }: TextFieldProps) {
+export function TextField({ name, label, required, hint, className, hideLabel, ...input }: TextFieldProps) {
   const { register } = useFormContext()
   return (
-    <Field name={name} label={label} required={required} hint={hint} className={className}>
+    <Field name={name} label={label} required={required} hint={hint} className={className} hideLabel={hideLabel}>
       {(aria) => <Input {...input} {...aria} {...register(name)} />}
     </Field>
   )
 }
 
-export function PasswordField({ name, label, required, hint, className, ...input }: TextFieldProps) {
+export function PasswordField({ name, label, required, hint, className, hideLabel, ...input }: TextFieldProps) {
   const { register } = useFormContext()
   const [visible, setVisible] = useState(false)
   return (
-    <Field name={name} label={label} required={required} hint={hint} className={className}>
+    <Field name={name} label={label} required={required} hint={hint} className={className} hideLabel={hideLabel}>
       {(aria) => (
         <div className="relative">
           <Input {...input} {...aria} {...register(name)} type={visible ? 'text' : 'password'} className="pr-11" />
@@ -223,4 +227,16 @@ export function FormAlert({ message }: { message: string | null }) {
       {message}
     </p>
   )
+}
+
+/** Caminho do primeiro campo com erro (ex.: "buyer.address") para focar após abrir seções recolhidas. */
+export function firstErrorPath(errors: object, prefix = ''): string | null {
+  for (const [key, value] of Object.entries(errors)) {
+    if (!value || typeof value !== 'object') continue
+    const path = prefix ? `${prefix}.${key}` : key
+    if ('message' in value && typeof (value as { message?: unknown }).message === 'string') return path
+    const nested = firstErrorPath(value as object, path)
+    if (nested) return nested
+  }
+  return null
 }

@@ -42,6 +42,7 @@ Base: `VITE_API_BASE_URL` (padrão `/api`). Rotas em `src/contracts/api.ts` (`AP
 | | `POST /cart/acknowledge` | opcional | — | `Cart` (aceita novos preços) |
 | Cotação | `POST /quotes` | opcional | `{ network }` | `Quote` |
 | Pedidos | `POST /orders` + `Idempotency-Key` | obrigatória | `CreateOrderInput` | `201 Order` (novo) · `200 Order` (replay) |
+| Transação (explorador simulado) | `GET /transactions/:hash` | — | — | `Transaction` (público, sem dados pessoais) |
 | | `GET /orders?status=` · `GET /orders/:orderId` | obrigatória | — | `OrderList` · `Order` |
 | Perfil | `GET/PATCH /profile` | obrigatória | `ProfileInput` | `User` |
 | | `PUT/DELETE /profile/avatar` | obrigatória | multipart `avatar` (png/jpg/webp ≤ 2 MB) | `User` |
@@ -123,7 +124,7 @@ Envelope (`src/contracts/realtime.ts`):
 ## 6. Checkout e pedidos
 
 1. O formulário (Perfil do colecionador, com os mesmos campos e schema de Carteiras) é pré-preenchido pela carteira cadastrada escolhida. O rascunho é persistido.
-2. A conexão da carteira é simulada (`connect`, recusa `WALLET_REJECTED`, `disconnect`). Trocar carteira, provedor ou rede exige reconectar.
+2. **Carteira e rede**: provedor (WalletConnect/MetaMask/Coinbase) e rede (Ethereum/Polygon/Solana, com taxa por rede) ficam no bloco "Carteira e rede". A conexão é simulada pelo servidor (`connect`, recusa `WALLET_REJECTED` no cenário `wallet-rejected`, `disconnect`). Ao clicar em "Confirmar compra", a carteira é conectada automaticamente se ainda não estiver (sem passo escondido); a recusa é exibida em destaque e nada é enviado. Trocar carteira, provedor ou rede exige reconectar.
 3. **Revisão**: ao abrir, o carrinho e a cotação são buscados de novo no servidor. Se os valores diferirem do que estava na tela, aparece "valores atualizados" e é exigida nova confirmação.
 4. **Envio**: `POST /orders` com `Idempotency-Key`. A chave é derivada da tentativa (mesmo payload, mesma chave) e persistida no sessionStorage.
    - Cliques repetidos são bloqueados por um ref e pelo estado `pending`.
@@ -200,7 +201,7 @@ Envelope (`src/contracts/realtime.ts`):
 | Fonte | Roboto Mono (variável, self-hosted). |
 | Cores derivadas | As cores informadas foram usadas como tokens. Borda, input, estados (sucesso, alerta, erro) e faixa do rodapé foram derivados para manter o contraste AA. |
 | Assets | As 4 artes do Figma foram convertidas para WebP em 320/640/960 px (`npm run assets`), com `srcset` e dimensões fixas. |
-| Explorador | Os links de transação apontam para o explorador da rede com hash simulado e são rotulados como simulação. |
+| Explorador | "Ver no Etherscan (simulado)" abre um **explorador simulado interno** (`/explorer/tx/:hash`, dados de `GET /transactions/:hash` do MSW) com aviso de que a transação não existe em blockchain. Nenhum link aponta para exploradores reais. |
 | Separador decimal | Preços em ponto ("1.19 ETH"), como nos cards do Figma. O slider de preço usa vírgula, como no Figma. |
 
 ## 12. Limitações conhecidas

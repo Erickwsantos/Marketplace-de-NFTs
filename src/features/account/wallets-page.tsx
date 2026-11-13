@@ -28,13 +28,14 @@ export function WalletsPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <h1 className="sr-only">Carteiras</h1>
+      {/* Mobile: o <h1> visível é o ScreenHeader ("Carteiras") do ProfileLayout. */}
+      <h1 className="sr-only max-md:hidden">Carteiras</h1>
       <QueryState query={query} skeleton={<WalletsSkeleton />} errorTitle="Não foi possível carregar suas carteiras">
         {({ items }) => {
           const primary = items.find((w) => w.role === 'primary') ?? null
           const secondary = items.find((w) => w.role === 'secondary') ?? null
           return (
-            <div className="flex flex-col gap-12">
+            <div className="flex flex-col gap-12 max-md:gap-4">
               <WalletSection
                 walletRole="primary"
                 wallet={primary}
@@ -89,7 +90,7 @@ function WalletSection({
   const [adding, setAdding] = useState(false)
 
   return (
-    <section aria-labelledby={titleId} className="flex flex-col gap-5">
+    <section aria-labelledby={titleId} className="flex flex-col gap-5 max-md:rounded-2xl max-md:bg-surface max-md:p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h2 id={titleId} className="text-lg font-bold text-primary md:text-xl">
@@ -148,7 +149,9 @@ function NewWallet({
 
   return (
     <div className="flex flex-col gap-5">
-      {!adding && <p className="rounded-md bg-surface p-4 text-sm text-muted-foreground">{emptyText}</p>}
+      {!adding && (
+        <p className="rounded-md bg-surface p-4 text-sm text-muted-foreground max-md:rounded-xl max-md:bg-background">{emptyText}</p>
+      )}
       {role === 'secondary' && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col gap-1">

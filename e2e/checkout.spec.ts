@@ -10,6 +10,9 @@ import {
   openReview,
   test,
   type ScenarioId,
+  expectCollectorName,
+  openCollectorData,
+  expectCheckoutLines,
 } from './fixtures'
 
 const EMERALD = { id: 'emerald-ape-042', name: 'Emerald Ape #042' }
@@ -20,7 +23,7 @@ async function startCheckout(page: Page, scenario: ScenarioId = 'instant') {
   await addToCartFromCatalog(page, EMERALD.name)
   await goToCart(page)
   await goToCheckout(page)
-  await expect(page.getByRole('textbox', { name: 'Nome de exibição' })).toHaveValue('Ana Ribeiro')
+  await expectCollectorName(page, 'Ana Ribeiro')
 }
 
 const orderIdFromUrl = (page: Page) => new URL(page.url()).pathname.split('/').pop()!
@@ -28,7 +31,7 @@ const orderIdFromUrl = (page: Page) => new URL(page.url()).pathname.split('/').p
 test.describe('Checkout', () => {
   test('compra completa do catálogo ao recibo confirmado', async ({ page }) => {
     await startCheckout(page)
-    await expect(page.getByRole('table', { name: 'Itens do pedido' }).getByText(EMERALD.name)).toBeVisible()
+    await expectCheckoutLines(page, [EMERALD.name])
     await connectWallet(page)
 
     const review = await openReview(page)
@@ -134,17 +137,41 @@ test.describe('Checkout', () => {
     await expect(page.getByText('MetaMask recusou a conexão. Tente novamente ou escolha outro provedor.')).toBeVisible()
     await expect(page.getByText('Carteira não conectada.')).toBeVisible()
 
-    // Sem conexão, a compra não segue para a revisão.
+    // "Confirmar compra" tenta conectar automaticamente; a carteira recusa de novo:
+    // a compra não segue para a revisão e o foco vai para a ação de nova tentativa.
     await page.getByRole('button', { name: 'Confirmar compra' }).click()
-    await expect(page.getByRole('alert').filter({ hasText: 'Conecte a carteira selecionada antes de confirmar a compra.' })).toBeVisible()
+    await expect(page.getByRole('alert').filter({ hasText: 'MetaMask recusou a conexão' })).toBeVisible()
     await expect(page.getByRole('dialog', { name: 'Revise seu pedido' })).toBeHidden()
     await expect(page.getByRole('button', { name: 'Conectar MetaMask' })).toBeFocused()
     expect(await mockControl(page).orders()).toEqual([])
   })
 
+  test('"Confirmar compra" conecta a carteira automaticamente e abre a revisão', async ({ page }) => {
+    await startCheckout(page)
+    await expect(page.getByText('Carteira não conectada.')).toBeVisible()
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    await expect(page.getByRole('dialog', { name: 'Revise seu pedido' })).toBeVisible()
+    await expect(page.getByText(/Conectado: MetaMask/)).toBeAttached()
+  })
+
+  test('recibo abre o explorador simulado interno (nunca um explorador real)', async ({ page }) => {
+    await startCheckout(page)
+    await page.getByRole('button', { name: 'Confirmar compra' }).click()
+    const review = page.getByRole('dialog', { name: 'Revise seu pedido' })
+    await expect(review.getByRole('table', { name: 'Itens do pedido' }).locator('tbody tr')).toHaveCount(1)
+    await review.getByRole('button', { name: 'Confirmar compra' }).click()
+    await expect(page.getByRole('heading', { name: 'Seus NFTs agora estão na sua carteira' })).toBeVisible({ timeout: 15_000 })
+    const explorer = page.getByRole('link', { name: /Ver no Etherscan \(simulado\)/ })
+    await expect(explorer).toHaveAttribute('href', /^\/explorer\/tx\/0x[0-9a-f]{64}$/)
+    await explorer.click()
+    await expect(page.getByText('Explorador simulado.')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Detalhes da transação' })).toBeVisible()
+  })
+
   test('validação do formulário de pagamento: campo obrigatório com erro associado', async ({ page }) => {
     await startCheckout(page)
     await connectWallet(page)
+    await openCollectorData(page)
     const displayName = page.getByRole('textbox', { name: 'Nome de exibição' })
     await displayName.fill('')
     const email = page.getByRole('textbox', { name: 'E-mail', exact: true })

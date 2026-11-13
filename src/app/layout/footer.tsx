@@ -4,7 +4,9 @@ import { toast } from 'sonner'
 import { CATEGORY_LABELS } from '@/shared/lib/labels'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
+import { cn } from '@/shared/lib/cn'
 import { Logo } from './header'
+import { useMobileChrome } from './mobile-chrome'
 
 const FEATURES = [
   { letter: 'W', title: 'Segurança da carteira', text: 'Proteja sua carteira e colecione arte digital verificada com confiança.' },
@@ -72,8 +74,9 @@ function Newsletter() {
 }
 
 export function Footer() {
+  const { footerOnMobile } = useMobileChrome()
   return (
-    <footer className="mt-16 pb-20 md:pb-0">
+    <footer className={cn('mt-16 md:block', footerOnMobile ? 'block' : 'hidden')}>
       <div className="container-page">
         <div className="grid gap-6 rounded-t-md bg-surface p-6 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map((f) => (

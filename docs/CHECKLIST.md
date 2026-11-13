@@ -52,13 +52,13 @@ Legenda: ✅ implementado e verificado · 🧪 coberto por teste E2E (arquivo em
 
 ### Pagamento e confirmação
 - [x] Validação dos campos do layout e revisão antes do envio — 🧪
-- [x] Carteiras cadastradas, seleção de rede, conexão/recusa/desconexão simuladas — 🧪
+- [x] Carteiras cadastradas, seleção de rede (bloco "Carteira e rede"), conexão automática ao confirmar, recusa e desconexão simuladas — 🧪
 - [x] Revalidação de preço, disponibilidade, cupom e taxas antes de confirmar; mudanças exigem nova confirmação — 🧪
 - [x] Sem pedidos duplicados (clique repetido, reenvio após timeout) — 🧪
 - [x] Pendente/confirmado/recusado com recuperação após refresh ou reconexão — 🧪
 - [x] Confirmação só para pedido confirmado pela simulação — ✅
 - [x] Itens preservados em falha; após confirmação remove só itens/quantidades comprados — 🧪
-- [x] Recibo a partir do snapshot do pedido; referências de transação simuladas — ✅
+- [x] Recibo a partir do snapshot do pedido (verificado: mudar o preço no catálogo não altera o recibo); referências de transação e explorador **simulados** (rota interna `/explorer/tx/:hash`) — ✅ 🧪
 
 ### Conta e sessão
 - [x] Cadastro, login, logout e sessão via API simulada — 🧪

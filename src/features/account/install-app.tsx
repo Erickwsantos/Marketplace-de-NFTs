@@ -48,7 +48,7 @@ export function InstallApp({ className }: { className?: string }) {
       <Button
         type="button"
         variant="outline"
-        className="w-full"
+        className="w-full max-md:h-11 max-md:rounded-xl"
         onClick={() => void install()}
         loading={pending}
         disabled={unavailable}

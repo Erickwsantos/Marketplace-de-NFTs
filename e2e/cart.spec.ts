@@ -9,6 +9,8 @@ import {
   summaryValue,
   test,
   USERS,
+  expectCheckoutLines,
+  isMobile,
 } from './fixtures'
 
 const EMERALD = { id: 'emerald-ape-042', name: 'Emerald Ape #042' }
@@ -102,7 +104,8 @@ test.describe('Carrinho', () => {
     await expect(cartItems(page)).toHaveCount(2)
     await expect(cartItem(page, EMERALD.name).locator('output')).toHaveText('1')
     await expect(cartItem(page, SAGE.name).locator('output')).toHaveText('2')
-    await expect(page.getByRole('link', { name: 'Carrinho, 3 itens' })).toBeVisible()
+    // Contador do header (desktop); no mobile o carrinho é tela imersiva, sem navegação.
+    if (!isMobile(page)) await expect(page.getByRole('link', { name: 'Carrinho, 3 itens' })).toBeVisible()
   })
 
   test('itens do visitante são preservados após o login', async ({ page }) => {
@@ -117,9 +120,7 @@ test.describe('Carrinho', () => {
     await login(page, USERS.ana)
     await page.waitForURL('**/checkout')
 
-    const order = page.getByRole('table', { name: 'Itens do pedido' })
-    await expect(order.getByText(EMERALD.name)).toBeVisible()
-    await expect(order.getByText(SAGE.name)).toBeVisible()
+    await expectCheckoutLines(page, [EMERALD.name, SAGE.name])
 
     const { carts } = await mockControl(page).snapshot()
     const anaCart = carts.find((c) => c.userId === 'user-ana')

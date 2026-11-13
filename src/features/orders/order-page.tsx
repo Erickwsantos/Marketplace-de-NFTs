@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
-import { ExternalLinkIcon, Loader2Icon, MailCheckIcon, WifiOffIcon, XCircleIcon } from 'lucide-react'
+import { SearchCheckIcon, Loader2Icon, MailCheckIcon, WifiOffIcon, XCircleIcon } from 'lucide-react'
 import type { Order } from '@/contracts'
 import { RouteNotFound } from '@/app/route-fallbacks'
 import { useAuth } from '@/features/auth/session'
@@ -13,6 +13,7 @@ import { formatEth } from '@/shared/lib/eth'
 import { EXPLORER_LABELS, formatDate, NETWORK_LABELS, ORDER_STATUS_LABELS, PROVIDER_LABELS, shortAddress } from '@/shared/lib/labels'
 import { Button } from '@/shared/ui/button'
 import { ErrorState, Skeleton } from '@/shared/ui/primitives'
+import { ScreenHeader } from '@/shared/ui/screen-header'
 import { orderQueries } from './api'
 import { pendingOrder } from './pending-order'
 
@@ -48,7 +49,8 @@ export function OrderPage() {
   if (!order.data) return <ReceiptSkeleton />
 
   return (
-    <div className="container-page flex justify-center py-8 md:py-14">
+    <div className="container-page flex flex-col items-center md:py-14">
+      <ScreenHeader title={order.data.status === 'confirmed' ? 'Pedido confirmado' : 'Seu pedido'} className="self-stretch" as="p" />
       {order.data.status === 'pending' && <PendingOrder order={order.data} />}
       {order.data.status === 'confirmed' && <Receipt order={order.data} />}
       {order.data.status === 'declined' && <DeclinedOrder order={order.data} />}
@@ -58,7 +60,7 @@ export function OrderPage() {
 
 function Card({ children, label }: { children: React.ReactNode; label: string }) {
   return (
-    <section aria-label={label} className="w-full max-w-lg rounded-md border-b-4 border-primary bg-surface p-5 md:p-6">
+    <section aria-label={label} className="w-full max-w-lg rounded-2xl border-b-4 border-primary bg-surface p-5 md:rounded-md md:p-6">
       {children}
     </section>
   )
@@ -171,10 +173,10 @@ function Receipt({ order }: { order: Order }) {
         </p>
         <div className="flex flex-col items-center gap-2">
           <Button asChild>
-            <a href={tx.explorerUrl} target="_blank" rel="noopener noreferrer">
-              Ver no {EXPLORER_LABELS[order.network]} <ExternalLinkIcon aria-hidden />
-              <span className="sr-only">(abre em nova aba; transação simulada)</span>
-            </a>
+            {/* Explorador SIMULADO interno (tx.explorerUrl): nenhuma referência aponta para blockchain real. */}
+            <Link to="/explorer/tx/$hash" params={{ hash: tx.hash }}>
+              Ver no {EXPLORER_LABELS[order.network]} (simulado) <SearchCheckIcon aria-hidden />
+            </Link>
           </Button>
           <p className="text-[10px] text-muted-foreground">Referência de transação simulada para demonstração.</p>
           <Link to="/" className="text-xs text-primary underline-offset-4 hover:underline">

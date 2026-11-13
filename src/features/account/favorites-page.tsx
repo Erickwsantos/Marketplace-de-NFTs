@@ -6,15 +6,16 @@ import { EmptyState } from '@/shared/ui/primitives'
 import { QueryState } from '@/shared/ui/query-state'
 import { useFavorites } from './favorites'
 
-const GRID = 'grid grid-cols-2 gap-4 sm:grid-cols-3'
+const GRID = 'grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4'
 
 export function FavoritesPage() {
   const query = useFavorites()
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="text-xl font-bold text-primary md:text-2xl">Lista de interesse</h1>
+    <div className="flex flex-col gap-6 max-md:gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 max-md:justify-end">
+        {/* Mobile: o <h1> é o ScreenHeader ("Lista de interesse") do ProfileLayout. */}
+        <h1 className="text-xl font-bold text-primary max-md:hidden md:text-2xl">Lista de interesse</h1>
         {query.data && query.data.items.length > 0 && (
           <span className="text-xs text-muted-foreground">
             {query.data.items.length} {query.data.items.length === 1 ? 'NFT' : 'NFTs'}

@@ -40,7 +40,11 @@ export const orderSchema = z.object({
   wallet: z.object({ id: z.string(), nickname: z.string(), address: z.string() }),
   buyer: z.object({ displayName: z.string(), email: z.string(), ensName: z.string() }),
   transaction: z
-    .object({ hash: z.string(), explorerUrl: z.string(), confirmedAt: isoDateSchema })
+    .object({
+      hash: z.string() /** Link do explorador simulado (rota interna). */,
+      explorerUrl: z.string(),
+      confirmedAt: isoDateSchema,
+    })
     .nullable(),
   failureReason: z.string().nullable(),
 })

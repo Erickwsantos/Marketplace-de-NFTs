@@ -8,6 +8,7 @@ import { useAuth } from '@/features/auth/session'
 import { announce } from '@/shared/a11y/announcer'
 import { errorMessage } from '@/shared/api/errors'
 import { queryKeys } from '@/shared/api/query-keys'
+import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/ui/button'
 import { applyServerErrors, Field, FormAlert, PasswordField, TextField, useZodForm } from '@/shared/ui/form'
 import { Input } from '@/shared/ui/input'
@@ -23,7 +24,10 @@ const passwordFormSchema = changePasswordInputSchema
     message: 'As senhas não conferem',
   })
 
-const toProfileValues = (user: User): ProfileInput => ({
+/** Mobile: cada formulário vira um cartão arredondado (padrão de app). */
+const MOBILE_CARD = 'max-md:rounded-2xl max-md:bg-surface max-md:p-4'
+
+const toProfileValues =(user: User): ProfileInput => ({
   displayName: user.displayName,
   username: user.username,
   email: user.email,
@@ -50,8 +54,9 @@ export function ProfilePage() {
   const query = useQuery({ ...accountQueries.profile(userId ?? ''), enabled: Boolean(userId) })
 
   return (
-    <div className="flex flex-col gap-10">
-      <h1 className="text-xl font-bold text-primary md:text-2xl">Perfil do colecionador</h1>
+    <div className="flex flex-col gap-10 max-md:gap-4">
+      {/* Mobile: o <h1> é o ScreenHeader ("Meu perfil") do ProfileLayout. */}
+      <h1 className="text-xl font-bold text-primary max-md:hidden md:text-2xl">Perfil do colecionador</h1>
       <QueryState query={query} skeleton={<ProfileSkeleton />} errorTitle="Não foi possível carregar o perfil">
         {(user) => <ProfileForm key={user.id} user={user} />}
       </QueryState>
@@ -98,8 +103,8 @@ function ProfileForm({ user }: { user: User }) {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={onSubmit} noValidate aria-labelledby="profile-data-title" className="flex flex-col gap-5">
-        <h2 id="profile-data-title" className="sr-only">
+      <form onSubmit={onSubmit} noValidate aria-labelledby="profile-data-title" className={cn('flex flex-col gap-5', MOBILE_CARD)}>
+        <h2 id="profile-data-title" className="sr-only max-md:not-sr-only max-md:text-base max-md:font-bold max-md:text-primary">
           Dados do perfil
         </h2>
         <FormAlert message={alert} />
@@ -275,7 +280,12 @@ function PasswordForm() {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={onSubmit} noValidate aria-labelledby="password-title" className="flex flex-col gap-5 border-t border-border pt-8">
+      <form
+        onSubmit={onSubmit}
+        noValidate
+        aria-labelledby="password-title"
+        className={cn('flex flex-col gap-5 border-t border-border pt-8 max-md:border-t-0 max-md:pt-4', MOBILE_CARD)}
+      >
         <h2 id="password-title" className="text-base font-bold text-primary md:text-lg">
           Alterar senha
         </h2>

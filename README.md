@@ -47,6 +47,52 @@ As variáveis não têm segredos e estão versionadas em `.env.development` e `.
 
 Cupons: `KURIO10` (10%), `LANCAMENTO` (5%), `EXPIRADO` (expirado). Qualquer outro código é inválido.
 
+### Exemplo de cadastro de carteira (para teste)
+
+Entre como **Bruno** (`bruno@kurio.test`, sem carteiras), abra **Perfil → Carteiras** e preencha.
+
+**Carteira principal (Ethereum):**
+
+| Campo | Valor |
+| --- | --- |
+| Nome de exibição | `Bruno Lima` |
+| Apelido da carteira | `Principal` |
+| Rede | Ethereum |
+| Nome do perfil | `bruno.criador` |
+| Endereço da carteira | `0x52908400098527886E0F7030069857D2E4169EE7` |
+| ENS ou carteira secundária (opcional) | *(vazio)* |
+| Tipo de carteira | MetaMask |
+| Código de indicação | `KURIO-2026` |
+| E-mail | `bruno@kurio.test` |
+| Nome ENS (`.eth`) | `bruno-lima` |
+
+**Carteira secundária (Solana):** marque "Igual à carteira principal" para copiar os dados e ajuste:
+
+| Campo | Valor |
+| --- | --- |
+| Apelido da carteira | `Reserva` |
+| Rede | Solana |
+| Endereço da carteira | `KurioDemoWa11et11111111111111111111111111111` |
+| Tipo de carteira | Coinbase Wallet |
+
+**Regras de validação** (as mesmas no cliente e no servidor simulado):
+
+| Campo | Regra |
+| --- | --- |
+| Endereço Ethereum/Polygon | `0x` + 40 caracteres hexadecimais |
+| Endereço Solana | Base58, de 32 a 44 caracteres (sem `0`, `O`, `I`, `l`) |
+| Código de indicação | 4 a 16 caracteres: letras, números e `-` |
+| Nome ENS | Minúsculas, números e `-`, de 3 a 32 caracteres. O sufixo `.eth` já aparece ao lado do campo. |
+| Nome de exibição, apelido e nome do perfil | Mínimo de 2 caracteres |
+| E-mail | Formato válido |
+
+**Para ver os erros de validação:**
+- Endereço `0x123` → "Endereço inválido: use 0x seguido de 40 caracteres hexadecimais".
+- Nome ENS `Bruno Lima` → "Use letras minúsculas, números e "-"".
+- Código de indicação `ab` → "Informe o código de indicação".
+
+Os endereços acima são fictícios e servem só para o fluxo simulado. Nenhuma blockchain é acessada.
+
 ## Cenários dos mocks
 
 Para selecionar um cenário, adicione `?mock-scenario=<id>` à URL. A escolha persiste entre refreshes. Para restaurar o estado inicial (dados, falhas e contadores), adicione `&mock-reset=1`.

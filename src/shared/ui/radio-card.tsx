@@ -23,7 +23,7 @@ export function RadioCard({
     <label
       htmlFor={id}
       className={cn(
-        'flex cursor-pointer items-center gap-3 rounded-md border bg-background px-3 py-3 text-sm transition-colors',
+        'flex cursor-pointer items-center gap-3 rounded-xl border bg-surface px-3 py-3 text-sm transition-colors md:rounded-md md:bg-background',
         selected ? 'border-primary' : 'border-border hover:border-primary/50',
         disabled && 'cursor-not-allowed opacity-50',
       )}

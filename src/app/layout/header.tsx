@@ -1,8 +1,9 @@
 import { useRef, useState, type RefObject } from 'react'
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
-import { HeartIcon, HomeIcon, LogInIcon, SearchIcon, ShoppingCartIcon, UserIcon } from 'lucide-react'
+import { CompassIcon, HeartIcon, HomeIcon, LogInIcon, SearchIcon, ShoppingCartIcon, UserIcon } from 'lucide-react'
 import { useAuth } from '@/features/auth/session'
 import { useCart } from '@/features/cart/hooks'
+import { useMobileChrome } from './mobile-chrome'
 import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
@@ -114,7 +115,8 @@ export function Header() {
     )
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur">
+    // No mobile cada tela tem o próprio cabeçalho (Figma): o header global é só desktop/tablet.
+    <header className="sticky top-0 z-40 hidden border-b border-border/60 bg-background/95 backdrop-blur md:block">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Logo />
         <nav aria-label="Principal" className="hidden md:block">
@@ -169,39 +171,68 @@ export function Header() {
   )
 }
 
-/** Navegação inferior no mobile (Figma: Início, Favoritos, Carrinho, Perfil). */
+/**
+ * Navegação inferior flutuante do mobile (Figma): só ícones (com nome
+ * acessível) e botão central em destaque para explorar o mercado.
+ * Oculta nas telas imersivas (detalhe, carrinho, pagamento, login).
+ */
 export function MobileNav() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const { pathname, bottomNav } = useMobileChrome()
   const { user } = useAuth()
   const cartLabel = useCartLabel()
+  if (!bottomNav) return null
   const item = (active: boolean) =>
-    cn('relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px]', active ? 'text-primary' : 'text-muted-foreground')
+    cn(
+      'relative grid size-11 place-items-center rounded-full transition-colors',
+      active ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+    )
+  const profileActive = pathname.startsWith('/profile') && pathname !== '/profile/favorites'
 
   return (
-    <nav aria-label="Navegação inferior" className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
-      <ul className="flex">
-        <li className="flex flex-1">
-          <Link to="/" className={item(pathname === '/')} aria-current={pathname === '/' ? 'page' : undefined}>
-            <HomeIcon className="size-5" aria-hidden /> Início
+    <nav
+      aria-label="Navegação inferior"
+      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 rounded-2xl border border-border/70 bg-surface/95 shadow-lg shadow-black/40 backdrop-blur md:hidden"
+    >
+      <ul className="flex items-center justify-around px-2 py-1.5">
+        <li>
+          <Link to="/" className={item(pathname === '/')} aria-label="Início" aria-current={pathname === '/' ? 'page' : undefined}>
+            <HomeIcon className="size-5" aria-hidden />
           </Link>
         </li>
-        <li className="flex flex-1">
-          <Link to="/profile/favorites" className={item(pathname === '/profile/favorites')}>
-            <HeartIcon className="size-5" aria-hidden /> Favoritos
+        <li>
+          <Link
+            to="/profile/favorites"
+            className={item(pathname === '/profile/favorites')}
+            aria-label="Favoritos"
+            aria-current={pathname === '/profile/favorites' ? 'page' : undefined}
+          >
+            <HeartIcon className="size-5" aria-hidden />
           </Link>
         </li>
-        <li className="flex flex-1">
+        <li>
+          <Link
+            to="/"
+            hash="catalogo"
+            aria-label="Explorar o mercado"
+            className="-mt-8 grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background transition-colors hover:bg-primary-hover"
+          >
+            <CompassIcon className="size-6" aria-hidden />
+          </Link>
+        </li>
+        <li>
           <Link to="/cart" className={item(pathname === '/cart')} aria-label={cartLabel}>
-            <span className="relative">
-              <ShoppingCartIcon className="size-5" aria-hidden />
-              <CartCount />
-            </span>
-            <span aria-hidden>Carrinho</span>
+            <ShoppingCartIcon className="size-5" aria-hidden />
+            <CartCount className="top-0.5 right-0.5" />
           </Link>
         </li>
-        <li className="flex flex-1">
-          <Link to={user ? '/profile' : '/login'} className={item(pathname.startsWith('/profile') || pathname === '/login')}>
-            <UserIcon className="size-5" aria-hidden /> {user ? 'Perfil' : 'Entrar'}
+        <li>
+          <Link
+            to={user ? '/profile' : '/login'}
+            className={item(profileActive)}
+            aria-label={user ? 'Perfil' : 'Entrar'}
+            aria-current={profileActive ? 'page' : undefined}
+          >
+            <UserIcon className="size-5" aria-hidden />
           </Link>
         </li>
       </ul>

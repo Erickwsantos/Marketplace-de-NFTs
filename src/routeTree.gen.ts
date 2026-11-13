@@ -21,6 +21,7 @@ import { Route as AuthOrdersOrderIdRouteImport } from './routes/_auth/orders.$or
 import { Route as AuthProfileIndexRouteImport } from './routes/_auth/profile.index'
 import { Route as AuthProfileFavoritesRouteImport } from './routes/_auth/profile.favorites'
 import { Route as AuthProfileWalletsRouteImport } from './routes/_auth/profile.wallets'
+import { Route as ExplorerTxHashRouteImport } from './routes/explorer.tx.$hash'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -81,6 +82,11 @@ const AuthProfileWalletsRoute = AuthProfileWalletsRouteImport.update({
   path: '/wallets',
   getParentRoute: () => AuthProfileRoute,
 } as any)
+const ExplorerTxHashRoute = ExplorerTxHashRouteImport.update({
+  id: '/explorer/tx/$hash',
+  path: '/explorer/tx/$hash',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/orders/$orderId': typeof AuthOrdersOrderIdRoute
   '/profile/favorites': typeof AuthProfileFavoritesRoute
   '/profile/wallets': typeof AuthProfileWalletsRoute
+  '/explorer/tx/$hash': typeof ExplorerTxHashRoute
   '/profile/': typeof AuthProfileIndexRoute
 }
 export interface FileRoutesByTo {
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/orders/$orderId': typeof AuthOrdersOrderIdRoute
   '/profile/favorites': typeof AuthProfileFavoritesRoute
   '/profile/wallets': typeof AuthProfileWalletsRoute
+  '/explorer/tx/$hash': typeof ExplorerTxHashRoute
   '/profile': typeof AuthProfileIndexRoute
 }
 export interface FileRoutesById {
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/_auth/orders/$orderId': typeof AuthOrdersOrderIdRoute
   '/_auth/profile/favorites': typeof AuthProfileFavoritesRoute
   '/_auth/profile/wallets': typeof AuthProfileWalletsRoute
+  '/explorer/tx/$hash': typeof ExplorerTxHashRoute
   '/_auth/profile/': typeof AuthProfileIndexRoute
 }
 export interface FileRouteTypes {
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/orders/$orderId'
     | '/profile/favorites'
     | '/profile/wallets'
+    | '/explorer/tx/$hash'
     | '/profile/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/orders/$orderId'
     | '/profile/favorites'
     | '/profile/wallets'
+    | '/explorer/tx/$hash'
     | '/profile'
   id:
     | '__root__'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/_auth/orders/$orderId'
     | '/_auth/profile/favorites'
     | '/_auth/profile/wallets'
+    | '/explorer/tx/$hash'
     | '/_auth/profile/'
   fileRoutesById: FileRoutesById
 }
@@ -171,6 +183,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   NftsNftIdRoute: typeof NftsNftIdRoute
+  ExplorerTxHashRoute: typeof ExplorerTxHashRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -259,6 +272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthProfileWalletsRouteImport
       parentRoute: typeof AuthProfileRoute
     }
+    '/explorer/tx/$hash': {
+      id: '/explorer/tx/$hash'
+      path: '/explorer/tx/$hash'
+      fullPath: '/explorer/tx/$hash'
+      preLoaderRoute: typeof ExplorerTxHashRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -299,6 +319,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   NftsNftIdRoute: NftsNftIdRoute,
+  ExplorerTxHashRoute: ExplorerTxHashRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

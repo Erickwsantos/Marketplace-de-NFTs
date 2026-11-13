@@ -26,6 +26,8 @@ export const API_ROUTES = {
   orders: '/orders',
   order: '/orders/:orderId',
 
+  transaction: '/transactions/:hash',
+
   profile: '/profile',
   avatar: '/profile/avatar',
   password: '/profile/password',

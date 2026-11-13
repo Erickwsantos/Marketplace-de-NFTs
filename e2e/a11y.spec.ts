@@ -25,6 +25,7 @@ test.describe('Acessibilidade', () => {
   })
 
   test('diálogo de busca: foco preso e Esc devolve o foco ao botão', async ({ page }) => {
+    test.skip(isMobile(page), 'No mobile a busca fica no topo da tela (sem diálogo), como no Figma')
     await open(page, '/')
     const trigger = page.getByRole('button', { name: 'Buscar NFTs' })
     await trigger.focus()

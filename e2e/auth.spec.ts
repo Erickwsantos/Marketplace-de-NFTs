@@ -12,6 +12,11 @@ import {
   USERS,
 } from './fixtures'
 
+/** Botão de envio do cadastro: "Criar perfil" no mobile (Figma), "Criar conta" no desktop. */
+const CREATE_PROFILE = /^Criar (perfil|conta)$/
+/** Título da área de perfil: "Meu perfil" no cabeçalho mobile, "Perfil do colecionador" no desktop. */
+const PROFILE_TITLE = /^(Meu perfil|Perfil do colecionador)$/
+
 test.describe('Autenticação', () => {
   test('cadastro: validação de campos vazios e senhas diferentes', async ({ page }) => {
     await open(page, '/register')
@@ -21,7 +26,7 @@ test.describe('Autenticação', () => {
     const password = dialog.getByLabel(/^Senha\*?$/)
     const confirm = dialog.getByLabel(/^Confirmar senha\*?$/)
 
-    await dialog.getByRole('button', { name: 'Criar conta' }).click()
+    await dialog.getByRole('button', { name: CREATE_PROFILE }).click()
     await expect(username).toHaveAttribute('aria-invalid', 'true')
     await expect(username).toHaveAccessibleDescription('Use ao menos 3 caracteres')
     await expect(email).toHaveAccessibleDescription('Informe o e-mail')
@@ -34,7 +39,7 @@ test.describe('Autenticação', () => {
     await email.fill('nova@kurio.test')
     await password.fill('senha1234')
     await confirm.fill('outra1234')
-    await dialog.getByRole('button', { name: 'Criar conta' }).click()
+    await dialog.getByRole('button', { name: CREATE_PROFILE }).click()
     await expect(confirm).toHaveAccessibleDescription('As senhas não conferem')
     await expect(username).toHaveAttribute('aria-invalid', 'false')
 
@@ -50,14 +55,14 @@ test.describe('Autenticação', () => {
     await email.fill(USERS.ana.email)
     await dialog.getByLabel(/^Senha\*?$/).fill('senha1234')
     await dialog.getByLabel(/^Confirmar senha\*?$/).fill('senha1234')
-    await dialog.getByRole('button', { name: 'Criar conta' }).click()
+    await dialog.getByRole('button', { name: CREATE_PROFILE }).click()
 
     await expect(email).toHaveAttribute('aria-invalid', 'true')
     await expect(email).toHaveAccessibleDescription('Este e-mail já está cadastrado')
     await expect(email).toBeFocused()
 
     await email.fill('outra.ana@kurio.test')
-    await dialog.getByRole('button', { name: 'Criar conta' }).click()
+    await dialog.getByRole('button', { name: CREATE_PROFILE }).click()
     await page.waitForURL((url) => url.pathname === '/')
     await expect(page.getByRole('dialog')).toBeHidden()
     const { users } = await mockControl(page).snapshot()
@@ -80,14 +85,14 @@ test.describe('Autenticação', () => {
     await page.waitForURL((url) => url.pathname === '/login' && url.searchParams.get('redirect') === '/profile')
     await login(page, USERS.ana)
     await page.waitForURL((url) => url.pathname === '/profile')
-    await expect(page.getByRole('heading', { name: 'Perfil do colecionador' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: PROFILE_TITLE })).toBeVisible()
     await expect(page.getByRole('textbox', { name: 'Nome de exibição' })).toHaveValue(USERS.ana.name)
   })
 
   test('sessão expirada leva ao login com aviso e retoma o fluxo', async ({ page }) => {
     await page.clock.install()
     await openAuthenticated(page, '/profile', 'session-expired')
-    await expect(page.getByRole('heading', { name: 'Perfil do colecionador' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: PROFILE_TITLE })).toBeVisible()
 
     // Prazo local vence (45 s): o verificador periódico encerra a sessão.
     await page.clock.fastForward(46_000)

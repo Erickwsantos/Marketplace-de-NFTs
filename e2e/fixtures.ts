@@ -132,10 +132,17 @@ export function searchParam(page: Page, key: string): unknown {
 
 /** Abre o carrinho pela navegação do layout: header no desktop, navegação inferior no mobile. */
 export async function goToCart(page: Page) {
-  const nav = isMobile(page)
-    ? page.getByRole('navigation', { name: 'Navegação inferior' })
-    : page.getByRole('banner')
-  await nav.getByRole('link', { name: /^Carrinho/ }).click()
+  if (isMobile(page)) {
+    const nav = page.getByRole('navigation', { name: 'Navegação inferior' })
+    if (await nav.count()) {
+      await nav.getByRole('link', { name: /^Carrinho/ }).click()
+    } else {
+      // Telas imersivas (Figma) não têm navegação inferior: volta pelo cabeçalho da tela.
+      await page.getByRole('button', { name: 'Voltar' }).click()
+    }
+  } else {
+    await page.getByRole('banner').getByRole('link', { name: /^Carrinho/ }).click()
+  }
   await page.waitForURL('**/cart')
 }
 
@@ -143,11 +150,31 @@ export async function goToCart(page: Page) {
 export async function goToCheckout(page: Page) {
   await page.getByRole('button', { name: 'Conectar e finalizar' }).click()
   await page.waitForURL('**/checkout')
-  await expect(page.getByRole('heading', { name: 'Perfil do colecionador' })).toBeVisible()
+  // Desktop: "Perfil do colecionador"; mobile (Figma): "Pagamento com carteira".
+  await expect(page.getByRole('heading', { level: 1, name: /Perfil do colecionador|Pagamento com carteira/ })).toBeVisible()
+}
+
+/** Mobile: abre a seção recolhível "Dados do colecionador" do checkout (no desktop já está visível). */
+export async function openCollectorData(page: Page) {
+  if (!isMobile(page)) return
+  const toggle = page.getByRole('button', { name: /Dados do colecionador/ })
+  if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click()
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+}
+
+/** Confere o nome pré-preenchido do colecionador (campo no desktop; resumo da seção no mobile). */
+export async function expectCollectorName(page: Page, name: string) {
+  if (isMobile(page)) {
+    await expect(page.getByRole('button', { name: /Dados do colecionador/ })).toContainText(name)
+  } else {
+    await expect(page.getByRole('textbox', { name: 'Nome de exibição' })).toHaveValue(name)
+  }
 }
 
 /** Conecta a carteira selecionada no checkout (MetaMask por padrão para a Ana). */
 export async function connectWallet(page: Page, provider = 'MetaMask') {
+  // Pode já estar conectada ("Confirmar compra" conecta automaticamente).
+  if (await page.getByText(new RegExp(`Conectado: ${provider}`)).isVisible()) return
   await page.getByRole('button', { name: `Conectar ${provider}` }).click()
   await expect(page.getByText(new RegExp(`Conectado: ${provider}`))).toBeVisible()
 }
@@ -255,3 +282,19 @@ export async function addToCartFromCatalog(page: Page, nftName: string) {
 
 export const test = base
 export { expect }
+
+/**
+ * Confere os itens do pedido no checkout. Desktop: tabela no resumo lateral.
+ * Mobile (Figma): os itens aparecem na revisão — abre a revisão, confere e fecha.
+ */
+export async function expectCheckoutLines(page: Page, names: string[]) {
+  if (!isMobile(page)) {
+    const table = page.getByRole('table', { name: 'Itens do pedido' })
+    for (const name of names) await expect(table.getByText(name)).toBeVisible()
+    return
+  }
+  const review = await openReview(page)
+  for (const name of names) await expect(review.getByText(name)).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(review).toBeHidden()
+}

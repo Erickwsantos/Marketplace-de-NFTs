@@ -42,11 +42,11 @@ export function CartItemRow({ item }: { item: CartItem }) {
 
   return (
     <li
-      className="grid grid-cols-[64px_1fr_auto] items-center gap-3 rounded-md bg-surface p-3 md:grid-cols-[minmax(0,2.2fr)_1fr_1fr_1fr_auto] md:gap-4"
+      className="grid grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-surface p-3 md:grid-cols-[minmax(0,2.2fr)_1fr_1fr_1fr_auto] md:gap-4 md:rounded-md"
       aria-busy={busy || undefined}
     >
       <div className="flex min-w-0 items-center gap-3 md:col-auto">
-        <Link to="/nfts/$nftId" params={{ nftId: item.nftId }} className="w-16 shrink-0 overflow-hidden rounded-md md:w-12">
+        <Link to="/nfts/$nftId" params={{ nftId: item.nftId }} className="w-16 shrink-0 overflow-hidden rounded-xl md:w-12 md:rounded-md">
           <NftImage image={item.image} sizes="64px" alt="" />
         </Link>
         <div className="hidden min-w-0 md:block">
@@ -55,8 +55,16 @@ export function CartItemRow({ item }: { item: CartItem }) {
       </div>
 
       <div className="min-w-0 md:hidden">
-        <ItemTitle item={item} />
+        <Link to="/nfts/$nftId" params={{ nftId: item.nftId }} className="block truncate text-sm font-semibold hover:text-primary">
+          {item.name}
+        </Link>
+        <p className="text-[11px] text-muted-foreground">Edição: {item.editionLabel}</p>
         <p className="mt-1 text-sm font-semibold text-primary">{formatEth(item.lineTotalEth)}</p>
+        {item.status !== 'ok' && (
+          <div className="mt-1">
+            <CartItemStatus item={item} />
+          </div>
+        )}
       </div>
 
       <div className="hidden text-sm md:block">
@@ -70,7 +78,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
         )}
       </div>
 
-      <div className="col-span-3 flex items-center justify-between gap-2 md:col-span-1 md:justify-start">
+      <div className="flex flex-col items-end gap-1 md:flex-row md:items-center md:justify-start">
         <QuantityStepper
           size="sm"
           label={item.name}
@@ -82,7 +90,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
         <Button
           variant="ghost"
           size="icon-sm"
-          className="md:hidden"
+          className="size-7 rounded-full text-muted-foreground md:hidden"
           onClick={() => remove.mutate({ itemId: item.id, name: item.name })}
           disabled={busy}
           aria-label={`Remover ${item.name} do carrinho`}
@@ -128,7 +136,7 @@ function ItemTitle({ item }: { item: CartItem }) {
 
 export function CartItemSkeleton() {
   return (
-    <li className="grid grid-cols-[64px_1fr] items-center gap-3 rounded-md bg-surface p-3" aria-hidden>
+    <li className="grid grid-cols-[64px_1fr] items-center gap-3 rounded-2xl bg-surface p-3 md:rounded-md" aria-hidden>
       <Skeleton className="size-16 md:size-12" />
       <div className="flex flex-col gap-2">
         <Skeleton className="h-4 w-2/5" />

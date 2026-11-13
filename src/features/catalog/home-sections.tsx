@@ -14,31 +14,33 @@ export function Hero({ featured }: { featured: FeaturedResponse | undefined }) {
 
   return (
     <section aria-roledescription="carrossel" aria-label="Destaques" className="container-page">
-      <div className="grid items-center gap-6 rounded-md bg-surface p-5 md:grid-cols-[1fr_minmax(0,360px)] md:bg-transparent md:p-0 md:py-10">
-        <div className="flex flex-col gap-3 md:gap-5">
-          <p className="text-xs text-muted-foreground md:text-sm">Bem-vindo à Kurio</p>
-          <h1 className="text-xl leading-tight font-bold tracking-wide uppercase md:text-4xl md:leading-[1.25]">
-            Seja dono do futuro da arte digital
+      {/* Mobile (Figma): cartão compacto rounded-2xl, texto à esquerda e arte à direita. */}
+      <div className="grid grid-cols-[1fr_118px] items-center gap-3 overflow-hidden rounded-2xl bg-surface p-4 md:grid-cols-[1fr_minmax(0,360px)] md:gap-6 md:rounded-none md:bg-transparent md:p-0 md:py-10">
+        <div className="flex min-w-0 flex-col gap-2 md:gap-5">
+          <p className="text-[10px] text-muted-foreground md:text-sm">Bem-vindo à Kurio</p>
+          <h1 className="text-base leading-tight font-bold tracking-wide uppercase md:text-4xl md:leading-[1.25]">
+            <span className="md:hidden">Seja dono da cultura digital</span>
+            <span className="hidden md:inline">Seja dono do futuro da arte digital</span>
           </h1>
-          <p className="max-w-md text-xs text-muted-foreground md:text-sm">
+          <p className="line-clamp-3 max-w-md text-[10px] leading-snug text-muted-foreground md:line-clamp-none md:text-sm">
             Descubra NFTs selecionados de criadores emergentes e consagrados. Colecione arte digital rara, apoie artistas e
             tenha uma porta de cultura da internet.
           </p>
-          <Button asChild size="sm" className="self-start uppercase">
+          <Button asChild size="sm" className="h-7 self-start rounded-md px-3 text-[10px] uppercase md:h-8 md:px-3 md:text-xs">
             <Link to="/" hash="catalogo">
               Explorar
             </Link>
           </Button>
         </div>
-        <div className="relative mx-auto w-40 md:w-full">
+        <div className="relative w-full">
           {current ? (
             <Link to="/nfts/$nftId" params={{ nftId: current.id }} className="block" aria-label={`Ver destaque: ${current.name}`}>
-              <NftImage image={current.image} sizes="(min-width: 768px) 360px, 160px" priority className="rounded-xl" />
+              <NftImage image={current.image} sizes="(min-width: 768px) 360px, 118px" priority className="rounded-xl" />
             </Link>
           ) : (
             <Skeleton className="aspect-square w-full rounded-xl" />
           )}
-          <div className="mt-2">
+          <div className="mt-1 md:mt-2">
             <CarouselDots
               count={items.length}
               current={index}
@@ -95,7 +97,7 @@ export function Promos() {
   return (
     <section aria-label="Coleções em destaque" className="container-page grid gap-4 md:grid-cols-2">
       {PROMOS.map((promo) => (
-        <article key={promo.title} className="grid grid-cols-[120px_1fr] items-center gap-4 rounded-md bg-surface p-3 md:grid-cols-[160px_1fr]">
+        <article key={promo.title} className="grid grid-cols-[120px_1fr] items-center gap-4 rounded-2xl bg-surface p-3 md:grid-cols-[160px_1fr] md:rounded-md">
           <img
             src={`/nfts/${promo.art}-320.webp`}
             alt=""
@@ -103,7 +105,7 @@ export function Promos() {
             height={320}
             loading="lazy"
             decoding="async"
-            className="aspect-square w-full rounded-md object-cover"
+            className="aspect-square w-full rounded-xl object-cover md:rounded-md"
           />
           <div className="flex flex-col items-start gap-2">
             <h2 className="text-sm font-bold">{promo.title}</h2>
@@ -140,7 +142,7 @@ export function Journal() {
       </div>
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {POSTS.map((post) => (
-          <li key={post.title} className="flex flex-col overflow-hidden rounded-md bg-surface">
+          <li key={post.title} className="flex flex-col overflow-hidden rounded-2xl bg-surface md:rounded-md">
             <img src={`/nfts/${post.art}-320.webp`} alt="" width={320} height={200} loading="lazy" decoding="async" className="aspect-[16/10] w-full object-cover" />
             <div className="flex flex-col gap-2 p-3">
               <p className="text-[10px] text-muted-foreground">

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, useCanGoBack, useNavigate, useRouter } from '@tanstack/react-router'
-import { AlertTriangleIcon, ArrowLeftIcon, BanIcon, HeartIcon, Link2Icon, ShoppingCartIcon, StarIcon, XIcon } from 'lucide-react'
+import { AlertTriangleIcon, BanIcon, ChevronLeftIcon, HeartIcon, Link2Icon, ShoppingCartIcon, StarIcon, XIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import type { NftDetail } from '@/contracts'
 import { useIsFavorite, useToggleFavorite } from '@/features/account/favorites'
@@ -16,22 +16,23 @@ import { BackgroundRefresh, Breadcrumbs, ErrorState, EthAmount, Skeleton } from 
 import { QuantityStepper } from '@/shared/ui/quantity-stepper'
 import { EditionPicker } from './edition-picker'
 import { editionMax, editionState, useEditionChangeNotice, type EditionNotice } from './editions'
-import { NftGallery, NftGallerySkeleton } from './nft-gallery'
+import { NftGallery, NftGallerySkeleton, OVERLAY_BUTTON } from './nft-gallery'
 import { formatRating, NftInfoTabs, RatingStars, type InfoTab } from './nft-info-tabs'
 
 const route = getRouteApi('/nfts/$nftId')
 
 /*
  * Estrutura compartilhada entre a página e o skeleton (mesmas dimensões → sem CLS).
- * A barra de compra mobile é `sticky` no fim da página: fica presa acima da
- * navegação inferior enquanto o conteúdo rola e, ao fim da página, volta ao
- * fluxo — nunca cobre o último conteúdo nem o rodapé.
+ * Mobile (Figma): tela imersiva (sem header/navegação inferior) com a barra de
+ * compra fixa no rodapé da tela; o conteúdo reserva espaço para ela
+ * (`max-md:pb-*`), então a barra nunca cobre o último conteúdo.
  */
-const PAGE = 'container-page flex flex-col gap-10 pt-4 md:gap-14 md:pt-6'
-const GRID = 'grid gap-6 md:grid-cols-2 md:items-start md:gap-8 lg:gap-12'
-const INFO = 'flex min-w-0 flex-col gap-5'
+const PAGE =
+  'container-page flex flex-col gap-10 pt-4 max-md:pb-[calc(9.5rem+env(safe-area-inset-bottom))] md:gap-14 md:pt-6'
+const GRID = 'grid gap-5 md:grid-cols-2 md:items-start md:gap-8 lg:gap-12'
+const INFO = 'flex min-w-0 flex-col gap-4 md:gap-5'
 const MOBILE_BAR =
-  'sticky bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 -mx-4 flex items-center gap-2 border-t border-border bg-surface px-4 py-2 md:hidden'
+  'fixed inset-x-0 bottom-0 z-40 flex flex-col gap-3 border-t border-border bg-background px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:hidden'
 
 export function NftDetailPage() {
   const { nftId } = route.useParams()
@@ -100,20 +101,30 @@ function NftDetailView({ nft, refreshing }: { nft: NftDetail; refreshing: boolea
           items={[{ label: 'Início', to: '/' }, { label: 'Mercado', to: '/' }, { label: nft.name }]}
         />
         <div className={GRID}>
-          <NftGallery nft={nft} overlay={<BackButton />} />
+          <NftGallery
+            nft={nft}
+            overlay={
+              <>
+                <BackButton />
+                {/* Mobile: favoritar sobre a imagem (Figma); no desktop fica ao lado de "Comprar". */}
+                <FavoriteButton nft={nft} variant="overlay" />
+              </>
+            }
+          />
 
           <div className={INFO}>
-            <div className="flex flex-col gap-2">
+            {/* Mobile: nome à esquerda e pílula da nota à direita; o preço fica só na barra de compra. */}
+            <div className="flex flex-col gap-2 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:items-start max-md:gap-3">
               <div className="flex items-start justify-between gap-3">
-                <h1 className="text-2xl font-bold break-words md:text-3xl">{nft.name}</h1>
+                <h1 className="text-2xl font-bold break-words max-md:text-xl md:text-3xl">{nft.name}</h1>
                 <BackgroundRefresh active={refreshing} />
               </div>
-              <EthAmount value={edition.priceEth} compareAt={edition.compareAtPriceEth} className="text-xl md:text-2xl" />
+              <EthAmount value={edition.priceEth} compareAt={edition.compareAtPriceEth} className="text-xl max-md:hidden md:text-2xl" />
               <RatingSummary nft={nft} onShowReviews={showReviews} />
             </div>
 
             <section aria-labelledby="nft-about-title" className="flex flex-col gap-1.5 text-sm">
-              <h2 id="nft-about-title" className="font-semibold">
+              <h2 id="nft-about-title" className="font-semibold max-md:sr-only">
                 Sobre este NFT:
               </h2>
               <p className="leading-relaxed text-muted-foreground">{nft.description}</p>
@@ -137,8 +148,8 @@ function NftDetailView({ nft, refreshing }: { nft: NftDetail; refreshing: boolea
 
             {notice && <ChangeNotice notice={notice} onDismiss={dismiss} />}
 
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="hidden items-center gap-3 md:flex">
+            <div className="flex flex-wrap items-center gap-3 max-md:hidden">
+              <div className="flex items-center gap-3">
                 <QuantityStepper
                   value={qty}
                   max={Math.max(1, max)}
@@ -150,7 +161,7 @@ function NftDetailView({ nft, refreshing }: { nft: NftDetail; refreshing: boolea
                   {buyLabel ?? 'Comprar'}
                 </Button>
               </div>
-              <FavoriteButton nft={nft} />
+              <FavoriteButton nft={nft} variant="inline" />
             </div>
 
             <dl className="grid grid-cols-[max-content_1fr] gap-x-2 gap-y-1.5 text-sm">
@@ -176,38 +187,34 @@ function NftDetailView({ nft, refreshing }: { nft: NftDetail; refreshing: boolea
       <NftCarousel title="Mais desta coleção" query={{ collection: nft.collection.id, exclude: nft.id }} />
 
       <section aria-label="Compra rápida" className={MOBILE_BAR}>
-        <div className="flex min-w-0 flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground" aria-hidden>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground" aria-hidden>
               Qtd.
             </span>
-            <QuantityStepper
-              size="sm"
-              value={qty}
-              max={Math.max(1, max)}
-              onChange={setQuantity}
-              label={nft.name}
-              disabled={!canBuy || busy}
-            />
+            <QuantityStepper value={qty} max={Math.max(1, max)} onChange={setQuantity} label={nft.name} disabled={!canBuy || busy} />
           </div>
-          <p className="text-sm">
+          <p className="text-lg font-bold">
             <span className="sr-only">Total: </span>
             <EthAmount value={multiplyEth(edition.priceEth, qty)} />
           </p>
         </div>
-        <Button className="ml-auto" onClick={buy} loading={buyMutation.isPending} disabled={!canBuy || busy}>
-          {buyLabel ?? 'Comprar NFT'}
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={addOnly}
-          loading={addMutation.isPending}
-          disabled={!canBuy || busy}
-          aria-label={`Adicionar ${nft.name} ao carrinho`}
-        >
-          {!addMutation.isPending && <ShoppingCartIcon aria-hidden />}
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button size="lg" className="flex-1 rounded-full" onClick={buy} loading={buyMutation.isPending} disabled={!canBuy || busy}>
+            {buyLabel ?? 'Comprar NFT'}
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-12 rounded-full [&_svg]:size-5"
+            onClick={addOnly}
+            loading={addMutation.isPending}
+            disabled={!canBuy || busy}
+            aria-label={`Adicionar ${nft.name} ao carrinho`}
+          >
+            {!addMutation.isPending && <ShoppingCartIcon aria-hidden />}
+          </Button>
+        </div>
       </section>
     </div>
   )
@@ -223,16 +230,16 @@ function BackButton() {
       type="button"
       onClick={() => (canGoBack ? router.history.back() : void navigate({ to: '/' }))}
       aria-label="Voltar"
-      className="absolute top-3 left-3 grid size-10 place-items-center rounded-full bg-background/85 text-foreground transition-colors hover:bg-primary hover:text-primary-foreground md:hidden"
+      className={cn(OVERLAY_BUTTON, 'absolute top-3 left-3 md:hidden')}
     >
-      <ArrowLeftIcon className="size-5" aria-hidden />
+      <ChevronLeftIcon className="size-5" aria-hidden />
     </button>
   )
 }
 
 function RatingSummary({ nft, onShowReviews }: { nft: NftDetail; onShowReviews: () => void }) {
   const { average, count } = nft.rating
-  if (count === 0) return <p className="text-sm text-muted-foreground">Sem avaliações ainda</p>
+  if (count === 0) return <p className="text-sm text-muted-foreground max-md:text-xs">Sem avaliações ainda</p>
   const avg = formatRating(average)
   return (
     <button
@@ -246,8 +253,11 @@ function RatingSummary({ nft, onShowReviews }: { nft: NftDetail; onShowReviews: 
       <span aria-hidden className="hidden flex-wrap items-center gap-x-2 text-left md:flex">
         <RatingStars value={average} /> {count} avaliações de colecionadores
       </span>
-      <span aria-hidden className="inline-flex items-center gap-1 md:hidden">
-        <StarIcon className="size-4 fill-current text-primary" /> {avg} ({count})
+      <span
+        aria-hidden
+        className="inline-flex items-center gap-1 rounded-full border border-primary px-2.5 py-1 text-xs whitespace-nowrap text-foreground md:hidden"
+      >
+        <StarIcon className="size-3.5 fill-current text-primary" /> {avg} ({count})
       </span>
     </button>
   )
@@ -273,13 +283,34 @@ function ChangeNotice({ notice, onDismiss }: { notice: EditionNotice; onDismiss:
   )
 }
 
-function FavoriteButton({ nft }: { nft: NftDetail }) {
+/**
+ * Mesmo botão em dois pontos do layout responsivo: `overlay` (círculo sobre a
+ * imagem, só mobile — Figma) e `inline` (ao lado de "Comprar", só md+). Um
+ * deles está sempre com display:none, então só um existe na árvore de
+ * acessibilidade e a ordem de foco segue a ordem visual em cada layout.
+ */
+function FavoriteButton({ nft, variant }: { nft: NftDetail; variant: 'overlay' | 'inline' }) {
   const favorite = useIsFavorite(nft.id)
   const toggleFavorite = useToggleFavorite()
+  const label = favorite ? 'Favoritado' : 'Favoritar'
+  const onClick = () => toggleFavorite.toggle(nft, favorite)
+  if (variant === 'overlay') {
+    return (
+      <button
+        type="button"
+        aria-pressed={favorite}
+        onClick={onClick}
+        className={cn(OVERLAY_BUTTON, 'absolute top-3 right-3 md:hidden', favorite && 'text-primary')}
+      >
+        <HeartIcon className={cn('size-5', favorite && 'fill-current')} aria-hidden />
+        <span className="sr-only">{label}</span>
+      </button>
+    )
+  }
   return (
-    <Button variant="outline" aria-pressed={favorite} onClick={() => toggleFavorite.toggle(nft, favorite)}>
+    <Button variant="outline" aria-pressed={favorite} onClick={onClick}>
       <HeartIcon className={cn(favorite && 'fill-current')} aria-hidden />
-      {favorite ? 'Favoritado' : 'Favoritar'}
+      {label}
     </Button>
   )
 }
@@ -317,10 +348,10 @@ export function NftDetailSkeleton() {
         <div className={GRID}>
           <NftGallerySkeleton />
           <div className={INFO}>
-            <div className="flex flex-col gap-2">
-              <Skeleton className="h-8 w-3/4 md:h-9" />
-              <Skeleton className="h-7 w-28 md:h-8" />
-              <Skeleton className="h-5 w-64 max-w-full" />
+            <div className="flex flex-col gap-2 max-md:flex-row max-md:items-start max-md:justify-between max-md:gap-3">
+              <Skeleton className="h-8 w-3/4 max-md:h-7 max-md:w-1/2 md:h-9" />
+              <Skeleton className="h-7 w-28 max-md:hidden md:h-8" />
+              <Skeleton className="h-5 w-64 max-w-full max-md:h-6 max-md:w-20 max-md:rounded-full" />
             </div>
             <div className="flex flex-col gap-1.5">
               <Skeleton className="h-5 w-32" />
@@ -337,8 +368,8 @@ export function NftDetailSkeleton() {
               </div>
               <Skeleton className="h-4 w-56" />
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <Skeleton className="hidden h-10 w-64 md:block" />
+            <div className="flex flex-wrap items-center gap-3 max-md:hidden">
+              <Skeleton className="h-10 w-64" />
               <Skeleton className="h-10 w-32" />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -379,12 +410,14 @@ export function NftDetailSkeleton() {
         </div>
       </div>
       <div className={MOBILE_BAR} aria-hidden="true">
-        <div className="flex flex-col gap-1">
-          <Skeleton className="h-6 w-28" />
-          <Skeleton className="h-5 w-20" />
+        <div className="flex items-center justify-between gap-3">
+          <Skeleton className="h-8 w-36" />
+          <Skeleton className="h-7 w-24" />
         </div>
-        <Skeleton className="ml-auto h-10 w-32" />
-        <Skeleton className="size-10" />
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-12 flex-1 rounded-full" />
+          <Skeleton className="size-12 rounded-full" />
+        </div>
       </div>
     </div>
   )

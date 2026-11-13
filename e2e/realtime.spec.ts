@@ -12,6 +12,7 @@ import {
   summaryValue,
   test,
   type ScenarioId,
+  expectCollectorName,
 } from './fixtures'
 
 const EMERALD = { id: 'emerald-ape-042', name: 'Emerald Ape #042', edition: 'emerald-ape-042-1-50' }
@@ -22,7 +23,7 @@ async function startCheckout(page: Page, scenario: ScenarioId = 'instant') {
   await addToCartFromCatalog(page, EMERALD.name)
   await goToCart(page)
   await goToCheckout(page)
-  await expect(page.getByRole('textbox', { name: 'Nome de exibição' })).toHaveValue('Ana Ribeiro')
+  await expectCollectorName(page, 'Ana Ribeiro')
 }
 
 const orderSummary = (page: Page) => page.getByRole('complementary', { name: 'Seus NFTs' })

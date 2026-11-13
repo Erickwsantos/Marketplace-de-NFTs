@@ -25,9 +25,27 @@ export function CollectorProfileFields({
   return (
     <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
       <TextField name={name('displayName')} label="Nome de exibição" required autoComplete="name" />
-      <TextField name={name('nickname')} label="Apelido da carteira" required placeholder="Ex.: Principal" />
-      <SelectField name={name('network')} label="Rede" required placeholder="Selecione uma rede" options={toOptions(NETWORK_LABELS)} />
-      <TextField name={name('profileName')} label="Nome do perfil" required autoComplete="username" />
+      <TextField
+        name={name('nickname')}
+        label="Apelido da carteira"
+        required
+        placeholder="Ex.: Principal"
+      />
+      {!omit.includes('network') && (
+        <SelectField
+          name={name('network')}
+          label="Rede"
+          required
+          placeholder="Selecione uma rede"
+          options={toOptions(NETWORK_LABELS)}
+        />
+      )}
+      <TextField
+        name={name('profileName')}
+        label="Nome do perfil"
+        required
+        autoComplete="username"
+      />
       <TextField
         name={name('address')}
         label="Endereço da carteira"
@@ -52,18 +70,29 @@ export function CollectorProfileFields({
           options={toOptions(PROVIDER_LABELS)}
         />
       )}
-      <TextField name={name('referralCode')} label="Código de indicação" required autoCapitalize="characters" />
+      <TextField
+        name={name('referralCode')}
+        label="Código de indicação"
+        required
+        autoCapitalize="characters"
+      />
       <TextField name={name('email')} label="E-mail" required type="email" autoComplete="email" />
       <Field name={name('ensName')} label="Nome ENS" required>
         {(aria) => (
           <div className="flex">
             <span
               aria-hidden
-              className="flex h-10 items-center rounded-l-md border border-r-0 border-input bg-surface px-3 text-sm text-muted-foreground"
+              className="border-input bg-surface text-muted-foreground flex h-10 items-center rounded-l-md border border-r-0 px-3 text-sm"
             >
               .eth
             </span>
-            <Input {...aria} {...register(name('ensName'))} className="rounded-l-none" spellCheck={false} aria-label="Nome ENS (sufixo .eth)" />
+            <Input
+              {...aria}
+              {...register(name('ensName'))}
+              className="rounded-l-none"
+              spellCheck={false}
+              aria-label="Nome ENS (sufixo .eth)"
+            />
           </div>
         )}
       </Field>
